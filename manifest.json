@@ -2,7 +2,7 @@
   "manifest_version": 2,
 
   "name": "Better Gmail Unsubscribe",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Adds an unsubscribe link for when Gmail doesn't offer one",
   "short_name": "Adds an unsubscribe link for when Gmail doesn't offer one",
 
@@ -12,10 +12,5 @@
     "scripts": ["background.js"]
   },
 
-  "icons": { "48": "icon.png" },
-
-  "content_scripts": [{
-    "matches": ["https://mail.google.com/"],
-    "css": ["gmail.css"]
-  }]
+  "icons": { "48": "icon.png" }
 }

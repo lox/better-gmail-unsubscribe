@@ -15,3 +15,14 @@ Future enhancements
 
  - Add a "mute" option to the unsubscribe modal that lets you filter out future messages from sender
  - Keyboard shortcuts?
+
+Development
+-----------
+
+To build a zip file for release:
+
+```bash
+zip ~/Desktop/better-gmail-unsubscribe.zip *.js icon.png manifest.json
+```
+
+
