@@ -1,37 +1,47 @@
 (function() {
-  var loadListener = self.setInterval(function () {pollMessage()}, 1000);
+  var loadListener = self.setInterval(function () {pollMessage()}, 100);
 
   function pollMessage() {
-    var title = findMessageTitle();
-    if (title) {
-      console.log("gmail.js: detected mail message: ", title)
+    var messages = findMessages();
+    if (messages.length) {
+      console.log("gmail.js: detected messages: ", messages)
       window.clearInterval(loadListener);
-      if (!hasGmailUnsubscribe(title)) {
-        console.log("gmail.js: no gmail unsubscribe, adding one")
-        addUnsubscribeButton(title);
+
+      // only apply to last message in thread
+      message = messages[messages.length-1];
+
+      if (!hasUnsubscribeLink(message)) {
+        console.log("gmail.js: no gmail unsubscribe, adding ours");
+        addUnsubscribeButton(message);
       }
     }
   }
 
-  function findMessageTitle() {
-    var matches = document.querySelectorAll("h3.iw");
+  function findMessageTitle(message) {
+    var matches = message.querySelectorAll("h3.iw");
     return matches.length > 0 ? matches[0] : false;
   }
 
-  function findMessageBody() {
-    return document.getElementById(":2t");
+  function findMessageBody(message) {
+    var matches = message.querySelectorAll('.adP.adO');
+    return matches.length > 0 ? matches[0] : false;
   }
 
-  function hasGmailUnsubscribe(titleEl) {
-    var matches = titleEl.querySelectorAll(".Ca");
-    return titleEl.querySelectorAll(".Ca").length > 0;
+  function findMessages() {
+    return document.querySelectorAll("div.gs");
   }
 
-  function addUnsubscribeButton(titleEl) {
+  function hasUnsubscribeLink(message) {
+    return message.querySelectorAll("h3.iw > .Ca, h3.iw > .unsub").length > 0;
+  }
+
+  function addUnsubscribeButton(message) {
+    var title  = findMessageTitle(message);
     var link = document.createElement('a');
     link.setAttribute('href', '');
+    link.setAttribute('class', 'unsub')
     link.innerHTML = "Unsubscribe"
-    titleEl.appendChild(link);
+    title.appendChild(link);
 
     // set up behaviour
     link.onclick = function(e) {
@@ -39,16 +49,17 @@
       injectModal(
         'Are you sure?',
         'You are about to unsubscribe from "<b>'+
-        titleEl.querySelectorAll("span[name]")[0].getAttribute('name')+
-        '</b>", do you wish to proceed?'
+        title.querySelectorAll("span[name]")[0].getAttribute('name')+
+        '</b>", do you wish to proceed?',
+        message
       );
     };
   }
 
-  function findUnsubscribeLinks() {
-    var links = findMessageBody().getElementsByTagName("a");
+  function findUnsubscribeLinks(message) {
+    var links = findMessageBody(message).querySelectorAll("a[href]");
     var matches = [];
-    var pattern = /unsub|optout|opt out/i;
+    var pattern = /unsub|opt\s*out/i;
 
     for (var i = 0, ii = links.length; i < ii; i++) {
       var link = links[i];
@@ -61,10 +72,41 @@
       }
     }
 
+    if (matches.length == 0) {
+      console.log("no unsubscribes found, finding last click here");
+      for (var i = 0, ii = links.length; i < ii; i++) {
+        var link = links[i];
+        if (link.innerHTML.match(/click\s+here/i)) {
+          matches.push(link);
+          console.log("unsubscribe candidate from content", link.innerHTML);
+        }
+      }
+      matches.reverse(); // use the one at the end of page
+    }
+
     return matches;
   }
 
-  function injectModal(title, body) {
+  function unsubscribe(message) {
+    var links = findUnsubscribeLinks(message);
+
+    // highlight unsubscribes in red
+    for (var i = 0, ii = links.length; i < ii; i++) {
+      var link = links[i];
+      link.style.backgroundColor = "red";
+      link.style.fontWeight = "bold";
+    }
+
+    // take action
+    if(links.length == 0) {
+      alert("No unsubscribe links found");
+    } else {
+      var win = window.open(links[0].href, '_blank');
+      win.focus();
+    }
+  }
+
+  function injectModal(title, body, message) {
     var shim = document.createElement("div");
     shim.setAttribute('class', 'Kj-JD-Jh');
     shim.setAttribute('style', 'opacity: 0.75; width: 100%; height: 100%;');
@@ -125,15 +167,8 @@
 
     unsubscribeBtn.onclick = function(e) {
       e.preventDefault();
-      links = findUnsubscribeLinks();
+      unsubscribe(message);
       closeModal(e);
-
-      if(links.length == 0) {
-        alert("No unsubscribe links found");
-      } else {
-        var win = window.open(links[0].href, '_blank');
-        win.focus();
-      }
     }
   }
 })();
