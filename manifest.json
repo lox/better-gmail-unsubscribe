@@ -2,8 +2,9 @@
   "manifest_version": 2,
 
   "name": "Better Gmail Unsubscribe",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Adds an unsubscribe link for when Gmail doesn't offer one",
+  "short_name": "Adds an unsubscribe link for when Gmail doesn't offer one",
 
   "permissions": [ "tabs", "https://mail.google.com/" ],
 
